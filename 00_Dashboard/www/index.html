@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TERMINAL MASTER - Socket Orchestrator</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0d0d0f; --term: #16161a; --border: #2d2d35; --green: #10b981; --blue: #3b82f6; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; }
+        
+        /* Layout */
+        aside { width: 300px; border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        main { flex: 1; padding: 25px; display: flex; flex-wrap: wrap; gap: 20px; align-content: flex-start; overflow-y: auto; }
+
+        h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .control-group { background: var(--term); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .control-group h3 { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 10px; }
+        
+        button { background: #333; color: #eee; border: 1px solid #444; padding: 8px 12px; border-radius: 6px; cursor: pointer; width: 100%; text-align: left; font-size: 0.9rem; margin-bottom: 5px; }
+        button:hover { background: #444; border-color: var(--blue); }
+        button.primary { background: var(--blue); border-color: var(--blue); color: white; margin-top: 10px; text-align: center; }
+
+        /* Terminal Window */
+        .terminal { width: 450px; height: 350px; background: var(--term); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .term-header { background: #1f1f25; padding: 10px 15px; font-family: 'JetBrains Mono'; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .term-output { flex: 1; padding: 15px; font-family: 'JetBrains Mono'; font-size: 0.85rem; color: #ccc; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; color: var(--green); }
+        .term-input { border-top: 1px solid var(--border); padding: 10px; display: flex; gap: 10px; }
+        .term-input input { background: transparent; border: none; color: #fff; flex: 1; font-family: 'JetBrains Mono'; outline: none; }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <h1>🛰️ ORCHESTRATOR</h1>
+        
+        <div class="control-group">
+            <h3>1. Lanzar Servidores</h3>
+            <button onclick="launch('chat')">Lanzar Chat (12345)</button>
+            <button onclick="launch('t1')">Lanzar Tickets Sol 1 (12346)</button>
+            <button onclick="launch('sync')">Lanzar Sync Demo (12348)</button>
+            <button onclick="launch('apache')">Lanzar Apache (8888)</button>
+        </div>
+
+        <div class="control-group">
+            <h3>2. Simular Clientes</h3>
+            <p style="font-size:0.7rem; color:#666; margin-bottom:5px;">Abre terminales web conectadas a puertos:</p>
+            <button class="primary" onclick="spawnTerminal('Cliente Chat', 12345)">+ Nueva Terminal (Chat)</button>
+            <button class="primary" onclick="spawnTerminal('Cliente Tickets', 12346)">+ Nueva Terminal (Tickets)</button>
+        </div>
+
+        <p style="font-size: 0.7rem; color: #444; margin-top:auto;">Antigravity Orchestrator v3.0<br>Control Center for Java Sockets</p>
+    </aside>
+
+    <main id="container">
+        <!-- Terminals go here -->
+    </main>
+
+    <script>
+        async function launch(cmd) {
+            await fetch('/api/launcher?cmd=' + cmd);
+            console.log("Servidor " + cmd + " lanzado.");
+        }
+
+        async function spawnTerminal(name, port) {
+            const container = document.getElementById('container');
+            const termId = 'term-' + Date.now();
+            
+            // Connect to socket via proxy
+            const resp = await fetch('/api/socket/connect?port=' + port);
+            const socketId = await resp.text();
+
+            if (isNaN(socketId)) {
+                alert("Error conectando al puerto " + port + ": " + socketId);
+                return;
+            }
+
+            const term = document.createElement('div');
+            term.className = 'terminal';
+            term.id = termId;
+            term.innerHTML = `
+                <div class="term-header">
+                    <span>${name} [ID:${socketId} / PORT:${port}]</span>
+                    <button onclick="document.getElementById('${termId}').remove()" style="width:20px; padding:0; background:none; border:none; color:red;">×</button>
+                </div>
+                <div class="term-output" id="${termId}-out">Conectado...\n</div>
+                <div class="term-input">
+                    <span style="color:var(--blue)">$</span>
+                    <input type="text" id="${termId}-in" placeholder="Escribe un mensaje..." onkeypress="handleKey(event, ${socketId}, '${termId}')">
+                </div>
+            `;
+            container.appendChild(term);
+
+            // Start polling for this terminal
+            startPolling(socketId, termId);
+        }
+
+        function handleKey(e, sid, tid) {
+            if (e.key === 'Enter') {
+                const val = e.target.value;
+                e.target.value = '';
+                sendMessage(sid, val, tid);
+            }
+        }
+
+        async function sendMessage(sid, msg, tid) {
+            const out = document.getElementById(tid + '-out');
+            out.innerText += "> " + msg + "\n";
+            await fetch('/api/socket/send?id=' + sid + '&msg=' + encodeURIComponent(msg));
+        }
+
+        function startPolling(sid, tid) {
+            const interval = setInterval(async () => {
+                const el = document.getElementById(tid);
+                if (!el) { clearInterval(interval); return; }
+
+                try {
+                    const resp = await fetch('/api/socket/read?id=' + sid);
+                    const data = await resp.text();
+                    if (data) {
+                        const out = document.getElementById(tid + '-out');
+                        out.innerText += data;
+                        out.scrollTop = out.scrollHeight;
+                    }
+                } catch(e) {}
+            }, 500);
+        }
+    </script>
+</body>
+</html>

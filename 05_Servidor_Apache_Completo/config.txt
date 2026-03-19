@@ -1,0 +1,4 @@
+Listen 8888
+DocumentRoot ./www
+ServerName localhost
+LogFile server.log
