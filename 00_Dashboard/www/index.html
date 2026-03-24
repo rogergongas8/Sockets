@@ -37,7 +37,9 @@
             <h3>1. Lanzar Servidores</h3>
             <button onclick="launch('chat')">Lanzar Chat (12345)</button>
             <button onclick="launch('t1')">Lanzar Tickets Sol 1 (12346)</button>
-            <button onclick="launch('sync')">Lanzar Sync Demo (12348)</button>
+            <button onclick="launch('sync')">Lanzar Sync (Race Condition - 12347)</button>
+            <button onclick="launch('sync_ok')">Lanzar Sync (Synchronized - 12348)</button>
+            <button onclick="launch('atomic')">Lanzar Sync (Atomic - 12349)</button>
             <button onclick="launch('apache')">Lanzar Apache (8888)</button>
         </div>
 
@@ -46,6 +48,7 @@
             <p style="font-size:0.7rem; color:#666; margin-bottom:5px;">Abre terminales web conectadas a puertos:</p>
             <button class="primary" onclick="spawnTerminal('Cliente Chat', 12345)">+ Nueva Terminal (Chat)</button>
             <button class="primary" onclick="spawnTerminal('Cliente Tickets', 12346)">+ Nueva Terminal (Tickets)</button>
+            <button class="primary" onclick="spawnTerminal('Cliente Sync', 12347)">+ Nueva Terminal (Sync Demo)</button>
         </div>
 
         <p style="font-size: 0.7rem; color: #444; margin-top:auto;">Antigravity Orchestrator v3.0<br>Control Center for Java Sockets</p>
@@ -56,8 +59,10 @@
     </main>
 
     <script>
+        const API_BASE = window.location.port === '9000' ? '' : 'http://localhost:9000';
+
         async function launch(cmd) {
-            await fetch('/api/launcher?cmd=' + cmd);
+            await fetch(API_BASE + '/api/launcher?cmd=' + cmd);
             console.log("Servidor " + cmd + " lanzado.");
         }
 
@@ -66,7 +71,7 @@
             const termId = 'term-' + Date.now();
             
             // Connect to socket via proxy
-            const resp = await fetch('/api/socket/connect?port=' + port);
+            const resp = await fetch(API_BASE + '/api/socket/connect?port=' + port);
             const socketId = await resp.text();
 
             if (isNaN(socketId)) {
@@ -105,7 +110,7 @@
         async function sendMessage(sid, msg, tid) {
             const out = document.getElementById(tid + '-out');
             out.innerText += "> " + msg + "\n";
-            await fetch('/api/socket/send?id=' + sid + '&msg=' + encodeURIComponent(msg));
+            await fetch(API_BASE + '/api/socket/send?id=' + sid + '&msg=' + encodeURIComponent(msg));
         }
 
         function startPolling(sid, tid) {
@@ -114,7 +119,7 @@
                 if (!el) { clearInterval(interval); return; }
 
                 try {
-                    const resp = await fetch('/api/socket/read?id=' + sid);
+                    const resp = await fetch(API_BASE + '/api/socket/read?id=' + sid);
                     const data = await resp.text();
                     if (data) {
                         const out = document.getElementById(tid + '-out');

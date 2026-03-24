@@ -45,15 +45,23 @@ public class DashboardServer {
             } else if (path.equals("/api/logs")) {
                 enviarLogs(pw);
             } else {
-                pw.println("HTTP/1.1 404 Not Found\r\n\r\n");
+                pw.println("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found");
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { 
+            e.printStackTrace();
+            try {
+                PrintWriter pw = new PrintWriter(client.getOutputStream(), true);
+                pw.println("HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\n\r\n" + e.getMessage());
+            } catch (Exception ex) {}
+        } finally {
+            try { client.close(); } catch (IOException e) {}
+        }
     }
 
     private static void enviarArchivo(String file, PrintWriter pw, OutputStream out) throws IOException {
         File f = new File(file);
-        if (!f.exists()) { pw.println("HTTP/1.1 404 Not Found\r\n\r\n"); return; }
-        pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n");
+        if (!f.exists()) { pw.println("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found"); return; }
+        pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
         pw.flush();
         Files.copy(f.toPath(), out);
     }
@@ -70,9 +78,11 @@ public class DashboardServer {
 
     private static void ejecutarProceso(String cmd, PrintWriter pw) {
         String javaCmd = switch(cmd) {
-            case "chat" -> "java -cp ../01_Chat_Basico ServidorChat";
-            case "t1" -> "java -cp ../02_Servidor_Tickets ServidorTickets";
+            case "chat" -> "java -cp ../01_Teoria_y_Chat ServidorChat";
+            case "t1" -> "java -cp ../02_TicketServer_Basico ServidorTickets";
             case "sync" -> "java -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSinSincronizar";
+            case "sync_ok" -> "java -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSynchronized";
+            case "atomic" -> "java -cp ../03_Sincronizacion_y_Atomics ServidorTicketsAtomic";
             case "apache" -> "java -cp ../05_Servidor_Apache_Completo ApacheSimulado";
             default -> null;
         };
@@ -87,7 +97,7 @@ public class DashboardServer {
                 } catch (Exception e) {}
             }).start();
         }
-        pw.println("HTTP/1.1 200 OK\r\n\r\nLanzado");
+        pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\nLanzado");
     }
 
     private static void conectarSocket(int port, PrintWriter pw) {
@@ -95,9 +105,9 @@ public class DashboardServer {
             ProxyConnection conn = new ProxyConnection(port);
             int id = socketCounter++;
             activeSockets.put(id, conn);
-            pw.println("HTTP/1.1 200 OK\r\n\r\n" + id);
+            pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + id);
         } catch (IOException e) {
-            pw.println("HTTP/1.1 500 Error\r\n\r\n" + e.getMessage());
+            pw.println("HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + e.getMessage());
         }
     }
 
@@ -105,16 +115,16 @@ public class DashboardServer {
         ProxyConnection conn = activeSockets.get(id);
         if (conn != null) {
             conn.out.println(msg);
-            pw.println("HTTP/1.1 200 OK\r\n\r\nSent");
-        } else { pw.println("HTTP/1.1 404 Not Found\r\n\r\nNot Found"); }
+            pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\nSent");
+        } else { pw.println("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\nNot Found"); }
     }
 
     private static void leerDeSocket(int id, PrintWriter pw) {
         ProxyConnection conn = activeSockets.get(id);
         if (conn != null) {
             String data = conn.readAll();
-            pw.println("HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + data);
-        } else { pw.println("HTTP/1.1 404 Not Found\r\n\r\nNot Found"); }
+            pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + data);
+        } else { pw.println("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found"); }
     }
 
     private static void enviarLogs(PrintWriter pw) {
