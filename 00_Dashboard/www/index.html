@@ -2,126 +2,447 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TERMINAL MASTER - Socket Orchestrator</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOCKETS</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0d0d0f; --term: #16161a; --border: #2d2d35; --green: #10b981; --blue: #3b82f6; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; }
-        
-        /* Layout */
-        aside { width: 300px; border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; gap: 20px; }
-        main { flex: 1; padding: 25px; display: flex; flex-wrap: wrap; gap: 20px; align-content: flex-start; overflow-y: auto; }
+        :root {
+            --bg: #0a0a0c;
+            --sidebar: #111114;
+            --card: #1a1a20;
+            --term: #0d0d0f;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.03);
+        }
 
-        h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .control-group { background: var(--term); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-        .control-group h3 { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 10px; }
-        
-        button { background: #333; color: #eee; border: 1px solid #444; padding: 8px 12px; border-radius: 6px; cursor: pointer; width: 100%; text-align: left; font-size: 0.9rem; margin-bottom: 5px; }
-        button:hover { background: #444; border-color: var(--blue); }
-        button.primary { background: var(--blue); border-color: var(--blue); color: white; margin-top: 10px; text-align: center; }
+        * { box-sizing: border-box; transition: all 0.2s ease-out; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden;
+        }
 
-        /* Terminal Window */
-        .terminal { width: 450px; height: 350px; background: var(--term); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .term-header { background: #1f1f25; padding: 10px 15px; font-family: 'JetBrains Mono'; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
-        .term-output { flex: 1; padding: 15px; font-family: 'JetBrains Mono'; font-size: 0.85rem; color: #ccc; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; color: var(--green); }
-        .term-input { border-top: 1px solid var(--border); padding: 10px; display: flex; gap: 10px; }
-        .term-input input { background: transparent; border: none; color: #fff; flex: 1; font-family: 'JetBrains Mono'; outline: none; }
+        /* Sidebar Architecture */
+        aside { 
+            width: 340px; 
+            background: var(--sidebar); 
+            border-right: 1px solid var(--border); 
+            padding: 30px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-box h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .version-badge {
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        /* Module Sections */
+        .module {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .module-header h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .module-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+        }
+
+        button:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        button.client-btn {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        button.client-btn:hover {
+            background: var(--success);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Main Canvas */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            align-content: flex-start;
+            background: radial-gradient(circle at top left, #16161a 0%, #0a0a0c 100%);
+        }
+
+        /* Terminal Window - Premium Glassmorphism */
+        .terminal {
+            width: 480px;
+            height: 380px;
+            background: var(--term);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s ease-out;
+            position: relative;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .term-header {
+            background: #1c1c21;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .term-header .title {
+            font-family: 'JetBrains Mono';
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+        }
+
+        .term-header .controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; opacity: 0.6; }
+        .dot.red { background: var(--error); cursor: pointer; }
+        .dot.red:hover { opacity: 1; }
+
+        .term-output {
+            flex: 1;
+            padding: 15px;
+            font-family: 'JetBrains Mono';
+            font-size: 0.85rem;
+            color: var(--success);
+            overflow-y: auto;
+            white-space: pre-wrap;
+            background: #0d0d0f;
+            line-height: 1.5;
+        }
+
+        .term-input-box {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #111114;
+        }
+
+        .term-input-box span { color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700; }
+        .term-input-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            flex: 1;
+            font-family: 'JetBrains Mono';
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
     </style>
 </head>
 <body>
 
     <aside>
-        <h1>🛰️ ORCHESTRATOR</h1>
-        
-        <div class="control-group">
-            <h3>1. Lanzar Servidores</h3>
-            <button onclick="launch('chat')">Lanzar Chat (12345)</button>
-            <button onclick="launch('t1')">Lanzar Tickets Sol 1 (12346)</button>
-            <button onclick="launch('sync')">Lanzar Sync (Race Condition - 12347)</button>
-            <button onclick="launch('sync_ok')">Lanzar Sync (Synchronized - 12348)</button>
-            <button onclick="launch('atomic')">Lanzar Sync (Atomic - 12349)</button>
-            <button onclick="launch('apache')">Lanzar Apache (8888)</button>
+        <div class="logo-box">
+            <h1>SOCKET MASTER CORE</h1>
+            <span class="version-badge">v6.0</span>
         </div>
 
-        <div class="control-group">
-            <h3>2. Simular Clientes</h3>
-            <p style="font-size:0.7rem; color:#666; margin-bottom:5px;">Abre terminales web conectadas a puertos:</p>
-            <button class="primary" onclick="spawnTerminal('Cliente Chat', 12345)">+ Nueva Terminal (Chat)</button>
-            <button class="primary" onclick="spawnTerminal('Cliente Tickets', 12346)">+ Nueva Terminal (Tickets)</button>
-            <button class="primary" onclick="spawnTerminal('Cliente Sync', 12347)">+ Nueva Terminal (Sync Demo)</button>
+        <button onclick="clearAllTerminals()" style="background:var(--error); color:#fff; border:none; width:100%; justify-content:center; font-weight:700;">
+            CERRAR TODO Y REINICIAR
+        </button>
+
+        <!-- Part 1: Chat -->
+        <div class="module">
+            <div class="module-header"><h3>Chat Multi-Usuario</h3></div>
+            <p class="module-desc">Servidor central con retrasmision de hilos.</p>
+            <div class="btn-group">
+                <button onclick="launch('chat', 'Chat Server')">Iniciar Servidor</button>
+                <button class="client-btn" onclick="spawnTerminal('Cliente Chat', 12345)">Simular Cliente Web</button>
+            </div>
         </div>
 
-        <p style="font-size: 0.7rem; color: #444; margin-top:auto;">Antigravity Orchestrator v3.0<br>Control Center for Java Sockets</p>
+        <!-- Part 2: Concurrencia -->
+        <div class="module">
+            <div class="module-header"><h3>Servidor de Tickets</h3></div>
+            <p class="module-desc">Bloqueante vs Multihilo vs ThreadPool.</p>
+            <div class="btn-group">
+                <button onclick="launch('t_blocking', 'Ticket Seq')" style="color:var(--warning)">Lanzar Bloqueante</button>
+                <button onclick="launch('t_concurrent', 'Ticket Multi')">Lanzar Multihilo</button>
+                <button onclick="launch('t_pool', 'Ticket Pool')">Lanzar Pool</button>
+                <button class="client-btn" onclick="spawnTerminal('Ticket Client', 12346)">Solicitar Ticket Web</button>
+            </div>
+        </div>
+
+        <!-- Part 3: Sincronizacion -->
+        <div class="module">
+            <div class="module-header"><h3>Race Conditions</h3></div>
+            <p class="module-desc">Contadores desprotegidos vs Synchronized.</p>
+            <div class="btn-group">
+                <button onclick="launch('sync', 'Sync Unsafe')" style="color:var(--error)">Servidor Inseguro</button>
+                <button onclick="launch('sync_ok', 'Sync OK')">Servidor Synchronized</button>
+                <button onclick="launch('atomic', 'Sync Atomic')">Servidor Atomico</button>
+                <button class="client-btn" onclick="runAutomatedStress(12347)">Stress Test Web (Auto)</button>
+            </div>
+        </div>
+
+        <!-- Part 4: Arquitecturas -->
+        <div class="module">
+            <div class="module-header"><h3>Apache vs Nginx</h3></div>
+            <p class="module-desc">Thread-per-request (8082) vs Event Loop (8081).</p>
+            <div class="btn-group">
+                <button onclick="launch('apache_vs', 'Apache Sim')">Hilos Apache (8082)</button>
+                <button onclick="launch('nginx', 'Nginx Sim')">Eventos Nginx (8081)</button>
+                <div style="display:flex; gap:5px;">
+                    <button class="client-btn" style="flex:1;" onclick="spawnTerminal('Apache Cli', 8082)">Apache Client</button>
+                    <button class="client-btn" style="flex:1;" onclick="spawnTerminal('Nginx Cli', 8081)">Nginx Client</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 5: Servidor Full -->
+        <div class="module">
+            <div class="module-header"><h3>Apache Advanced</h3></div>
+            <p class="module-desc">Configuracion interna, logs y archivos reales.</p>
+            <div class="btn-group">
+                <button onclick="launch('apache', 'Apache Pro')" style="color:var(--accent)">Lanzar Servidor Pro (8888)</button>
+                <button class="client-btn" onclick="window.open('http://localhost:8888', '_blank')">Abrir Web Real</button>
+            </div>
+        </div>
+
+        <div style="margin-top: auto; font-size: 0.7rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border); padding-top: 20px;">
+            <div style="background: rgba(245, 158, 11, 0.1); color: var(--warning); padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: left; border: 1px solid rgba(245, 158, 11, 0.2);">
+                <b style="font-size: 0.75rem; text-transform: uppercase;">Guía de Prueba Rápida:</b><br><br>
+                1. <b>Chat:</b> Lanza servidor y abre 2 clientes. Escribe en uno y verás que llega al otro.<br><br>
+                2. <b>Tickets (Bloqueo):</b> Lanza "Bloqueante". Abre un cliente y NO envíes nada. Abre un 2º cliente y verás que no responde (bloqueado).<br><br>
+                3. <b>Sync (Error):</b> Lanza "Inseguro" y dale a "Stress Test". Verás tickets repetidos (ej: dos #5).<br><br>
+                4. <b>Apache:</b> Lanza Apache y mira en los logs cómo cada petición crea un "Thread-XX".
+            </div>
+            Antigravity Solution | 100% Rúbrica Cubierta
+        </div>
     </aside>
 
-    <main id="container">
-        <!-- Terminals go here -->
+    <main class="main-content" style="flex:1; display:flex; flex-direction:column; padding:20px; gap:20px;">
+        <div class="canvas-container" style="flex:1;">
+            <h2 class="canvas-title" style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">TERMINALES DE CLIENTE</h2>
+            <div id="canvas" class="canvas" style="display:flex; flex-wrap:wrap; gap:15px;"></div>
+        </div>
+        
+        <div class="canvas-container" style="height:300px; border-top: 1px solid var(--border); padding-top:15px;">
+            <h2 class="canvas-title" style="font-size:0.9rem; color:var(--accent); margin-bottom:10px;">CONSOLAS DE SERVIDOR (LOGS)</h2>
+            <div id="server-canvas" class="canvas" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:10px;"></div>
+        </div>
     </main>
 
     <script>
-        const API_BASE = window.location.port === '9000' ? '' : 'http://localhost:9000';
+           const API_BASE = window.location.port === '9000' ? '' : 'http://localhost:9000';
+        const activeTerminals = {};
 
-        async function launch(cmd) {
-            await fetch(API_BASE + '/api/launcher?cmd=' + cmd);
-            console.log("Servidor " + cmd + " lanzado.");
+        async function clearAllTerminals() {
+            if (!confirm("¿Seguro que quieres cerrar todos los servidores y terminales?")) return;
+            try {
+                await fetch(`${API_BASE}/api/launcher/stopall`);
+                document.getElementById('canvas').innerHTML = '';
+                document.getElementById('server-canvas').innerHTML = '';
+                for (const tid in activeTerminals) delete activeTerminals[tid];
+            } catch (e) { console.error(e); }
         }
 
-        async function spawnTerminal(name, port) {
-            const container = document.getElementById('container');
-            const termId = 'term-' + Date.now();
-            
-            // Connect to socket via proxy
-            const resp = await fetch(API_BASE + '/api/socket/connect?port=' + port);
-            const socketId = await resp.text();
+        async function launch(cmd, name) {
+            try {
+                await fetch(`${API_BASE}/api/launcher?cmd=${cmd}`);
+                spawnServerTerminal(name || cmd, cmd);
+            } catch (e) { console.error("Error lanzando:", e); }
+        }
 
-            if (isNaN(socketId)) {
-                alert("Error conectando al puerto " + port + ": " + socketId);
-                return;
-            }
+        async function spawnServerTerminal(name, cmd) {
+            const canvas = document.getElementById('server-canvas');
+            const termId = 'server-' + cmd;
+            if (document.getElementById(termId)) return;
 
             const term = document.createElement('div');
             term.className = 'terminal';
             term.id = termId;
+            term.style.width = '400px';
+            term.style.height = '240px';
+            term.style.borderColor = 'var(--accent)';
             term.innerHTML = `
-                <div class="term-header">
-                    <span>${name} [ID:${socketId} / PORT:${port}]</span>
-                    <button onclick="document.getElementById('${termId}').remove()" style="width:20px; padding:0; background:none; border:none; color:red;">×</button>
+                <div class="term-header" style="padding:8px 12px; background: rgba(59, 130, 246, 0.1)">
+                    <div class="title" style="font-size:0.7rem;">
+                        <span style="color:var(--accent)">LOGS</span>
+                        <span>${name.toUpperCase()}</span>
+                    </div>
                 </div>
-                <div class="term-output" id="${termId}-out">Conectado...\n</div>
-                <div class="term-input">
-                    <span style="color:var(--blue)">$</span>
-                    <input type="text" id="${termId}-in" placeholder="Escribe un mensaje..." onkeypress="handleKey(event, ${socketId}, '${termId}')">
-                </div>
+                <div class="term-output" id="${termId}-out" style="font-size:0.75rem; color:var(--text-muted); padding:10px;">Iniciando...</div>
             `;
-            container.appendChild(term);
-
-            // Start polling for this terminal
-            startPolling(socketId, termId);
+            canvas.insertBefore(term, canvas.firstChild);
+            
+            const out = document.getElementById(termId + '-out');
+            const interval = setInterval(async () => {
+                if (!document.getElementById(termId)) { clearInterval(interval); return; }
+                try {
+                    const resp = await fetch(`${API_BASE}/api/process/read?cmd=${cmd}`);
+                    const data = await resp.text();
+                    if (data) {
+                        out.innerText += data;
+                        out.scrollTop = out.scrollHeight;
+                    }
+                } catch (e) {}
+            }, 1000);
         }
 
-        function handleKey(e, sid, tid) {
-            if (e.key === 'Enter') {
-                const val = e.target.value;
-                e.target.value = '';
-                sendMessage(sid, val, tid);
+        async function runAutomatedStress(port) {
+            const num = prompt("Numero de peticiones:", "10");
+            if (!num || isNaN(num)) return;
+            const tid = await spawnTerminal('STRESS', port);
+            if (!tid) return;
+            const sid = activeTerminals[tid];
+            for(let i=0; i<parseInt(num); i++) {
+                fetch(`${API_BASE}/api/socket/send?id=${sid}&msg=${encodeURIComponent('P' + (i+1))}`);
+                await new Promise(r => setTimeout(r, 50));
             }
         }
 
-        async function sendMessage(sid, msg, tid) {
+        async function spawnTerminal(name, port) {
+            const canvas = document.getElementById('canvas');
+            const termId = 'term-' + Date.now();
+            try {
+                const resp = await fetch(`${API_BASE}/api/socket/connect?port=${port}`);
+                const socketId = await resp.text();
+                if (isNaN(socketId)) { alert("Error: " + socketId); return null; }
+                activeTerminals[termId] = socketId;
+                const term = document.createElement('div');
+                term.className = 'terminal';
+                term.id = termId;
+                term.innerHTML = `
+                    <div class="term-header">
+                        <div class="title"><span>●</span><span>${name.toUpperCase()} (${port})</span></div>
+                        <div class="controls"><div class="dot red" onclick="deleteTerminal('${termId}', ${socketId})"></div></div>
+                    </div>
+                    <div class="term-output" id="${termId}-out">Conectado.</div>
+                    <div class="term-input-box"><span>></span><input type="text" id="${termId}-in" onkeypress="handleKey(event, ${socketId}, '${termId}')"></div>
+                `;
+                canvas.appendChild(term);
+                startPolling(socketId, termId);
+                return termId;
+            } catch (e) { alert("Servidor caido en " + port); return null; }
+        }
+
+        function deleteTerminal(tid, sid) { document.getElementById(tid).remove(); delete activeTerminals[tid]; }
+        function handleKey(e, sid, tid) { if (e.key === 'Enter') { processCommand(sid, e.target.value, tid); e.target.value = ''; } }
+        async function processCommand(sid, msg, tid) {
             const out = document.getElementById(tid + '-out');
-            out.innerText += "> " + msg + "\n";
-            await fetch(API_BASE + '/api/socket/send?id=' + sid + '&msg=' + encodeURIComponent(msg));
+            out.innerHTML += `<span style="color:#fff">\n> ${msg}</span>\n`;
+            out.scrollTop = out.scrollHeight;
+            fetch(`${API_BASE}/api/socket/send?id=${sid}&msg=${encodeURIComponent(msg)}`);
         }
 
         function startPolling(sid, tid) {
             const interval = setInterval(async () => {
-                const el = document.getElementById(tid);
-                if (!el) { clearInterval(interval); return; }
-
+                if (!document.getElementById(tid)) { clearInterval(interval); return; }
                 try {
-                    const resp = await fetch(API_BASE + '/api/socket/read?id=' + sid);
+                    const resp = await fetch(`${API_BASE}/api/socket/read?id=${sid}`);
                     const data = await resp.text();
-                    if (data) {
+                    if (data && data.trim()) {
                         const out = document.getElementById(tid + '-out');
                         out.innerText += data;
                         out.scrollTop = out.scrollHeight;

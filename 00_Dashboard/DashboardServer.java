@@ -6,12 +6,14 @@ import java.util.concurrent.*;
 
 public class DashboardServer {
     private static final int DASHBOARD_PORT = 9000;
+    private static final Map<String, StringBuilder> processLogs = new ConcurrentHashMap<>();
     private static final Map<Integer, ProxyConnection> activeSockets = new ConcurrentHashMap<>();
+    private static final Map<String, Process> startedProcesses = new ConcurrentHashMap<>();
     private static int socketCounter = 1;
 
     public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(DASHBOARD_PORT);
-        System.out.println("🚀 [DASHBOARD] ACTIVO EN http://localhost:" + DASHBOARD_PORT);
+        System.out.println("🚀 [DASHBOARD v7.0] ONLINE en http://localhost:" + DASHBOARD_PORT);
         
         while (true) {
             Socket client = server.accept();
@@ -20,18 +22,25 @@ public class DashboardServer {
     }
 
     private static void manejarPeticion(Socket client) {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-             PrintWriter pw = new PrintWriter(client.getOutputStream(), true)) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
+             PrintWriter pw = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), "UTF-8"), true)) {
             
             String firstLine = in.readLine();
             if (firstLine == null) return;
-            String path = firstLine.split(" ")[1];
+            String[] requestParts = firstLine.split(" ");
+            if (requestParts.length < 2) return;
+            String path = requestParts[1];
             
             if (path.equals("/") || path.equals("/index.html")) {
                 enviarArchivo("www/index.html", pw, client.getOutputStream());
+            } else if (path.startsWith("/api/launcher/stopall")) {
+                detenerTodo(pw);
             } else if (path.startsWith("/api/launcher")) {
                 String cmd = getParam(path, "cmd");
                 ejecutarProceso(cmd, pw);
+            } else if (path.startsWith("/api/process/read")) {
+                String cmd = getParam(path, "cmd");
+                leerLogsProceso(cmd, pw);
             } else if (path.startsWith("/api/socket/connect")) {
                 int port = Integer.parseInt(getParam(path, "port"));
                 conectarSocket(port, pw);
@@ -43,7 +52,8 @@ public class DashboardServer {
                 int id = Integer.parseInt(getParam(path, "id"));
                 leerDeSocket(id, pw);
             } else if (path.equals("/api/logs")) {
-                enviarLogs(pw);
+                // This endpoint is now deprecated in favor of /api/process/read
+                pw.println("HTTP/1.1 200 OK\r\n\r\nActive (deprecated)");
             } else {
                 pw.println("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found");
             }
@@ -78,23 +88,51 @@ public class DashboardServer {
 
     private static void ejecutarProceso(String cmd, PrintWriter pw) {
         String javaCmd = switch(cmd) {
-            case "chat" -> "java -cp ../01_Teoria_y_Chat ServidorChat";
-            case "t1" -> "java -cp ../02_TicketServer_Basico ServidorTickets";
-            case "sync" -> "java -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSinSincronizar";
-            case "sync_ok" -> "java -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSynchronized";
-            case "atomic" -> "java -cp ../03_Sincronizacion_y_Atomics ServidorTicketsAtomic";
-            case "apache" -> "java -cp ../05_Servidor_Apache_Completo ApacheSimulado";
+            case "chat" -> "java -Dfile.encoding=UTF-8 -cp ../01_Teoria_y_Chat ServidorChat";
+            case "chat_client" -> "java -Dfile.encoding=UTF-8 -cp ../01_Teoria_y_Chat ClienteChat";
+            case "t_blocking" -> "java -Dfile.encoding=UTF-8 -cp ../02_TicketServer_Basico ServidorTickets";
+            case "t_concurrent" -> "java -Dfile.encoding=UTF-8 -cp ../02_TicketServer_Basico ServidorTicketsConcurrencia";
+            case "t_pool" -> "java -Dfile.encoding=UTF-8 -cp ../02_TicketServer_Basico ServidorTicketsPool";
+            case "sync" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSinSincronizar";
+            case "sync_client" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ClienteTicketsDuplicados";
+            case "sync_ok" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSynchronized";
+            case "atomic" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ServidorTicketsAtomic";
+            case "apache_vs" -> "java -Dfile.encoding=UTF-8 -cp ../04_Apache_vs_Nginx ServidorGestionApache";
+            case "nginx" -> "java -Dfile.encoding=UTF-8 -cp ../04_Apache_vs_Nginx ServidorGestionNginx";
+            case "apache" -> "java -Dfile.encoding=UTF-8 -cp ../05_Servidor_Apache_Completo ApacheSimulado";
             default -> null;
         };
+
         if (javaCmd != null) {
+            final String fCmd = javaCmd;
+            
+            // Si ya existe este proceso, lo matamos antes de lanzar otro para evitar "Port already in use"
+            Process existing = startedProcesses.get(cmd);
+            if (existing != null && existing.isAlive()) {
+                existing.destroyForcibly();
+                try { Thread.sleep(200); } catch (InterruptedException e) {}
+            }
+
+            processLogs.put(cmd, new StringBuilder("🚀 Iniciando [" + cmd + "]...\n"));
             new Thread(() -> {
                 try {
-                    System.out.println("Lanzando: " + javaCmd);
-                    Process p = Runtime.getRuntime().exec(javaCmd);
-                    // Los logs de consola van al stdout del dashboard
-                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    String l; while ((l = r.readLine()) != null) System.out.println("["+cmd+"] " + l);
-                } catch (Exception e) {}
+                    System.out.println("Lanzando: " + fCmd);
+                    ProcessBuilder pb = new ProcessBuilder(fCmd.split(" "));
+                    pb.redirectErrorStream(true);
+                    Process p = pb.start();
+                    startedProcesses.put(cmd, p);
+                    
+                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"));
+                    String l;
+                    while ((l = r.readLine()) != null) {
+                        StringBuilder sb = processLogs.get(cmd);
+                        if (sb != null) synchronized(sb) { sb.append(l).append("\n"); }
+                    }
+                } catch (Exception e) { 
+                    e.printStackTrace();
+                    StringBuilder sb = processLogs.get(cmd);
+                    if (sb != null) synchronized(sb) { sb.append("❌ ERROR: ").append(e.getMessage()).append("\n"); }
+                }
             }).start();
         }
         pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\nLanzado");
@@ -123,13 +161,29 @@ public class DashboardServer {
         ProxyConnection conn = activeSockets.get(id);
         if (conn != null) {
             String data = conn.readAll();
-            pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + data);
+            pw.print("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + data);
+            pw.flush();
         } else { pw.println("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found"); }
     }
 
-    private static void enviarLogs(PrintWriter pw) {
-        // En este V3 los logs irán directo al poll de cada terminal
-        pw.println("HTTP/1.1 200 OK\r\n\r\nActive");
+    private static void leerLogsProceso(String cmd, PrintWriter pw) {
+        StringBuilder sb = processLogs.get(cmd);
+        String data = "";
+        if (sb != null) {
+            synchronized(sb) {
+                data = sb.toString();
+                sb.setLength(0);
+            }
+        }
+        pw.print("HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=UTF-8\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + data);
+        pw.flush();
+    }
+
+    private static void detenerTodo(PrintWriter pw) {
+        for (Process p : startedProcesses.values()) { p.destroyForcibly(); }
+        startedProcesses.clear();
+        processLogs.clear();
+        pw.println("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\nStopped");
     }
 
     static class ProxyConnection {

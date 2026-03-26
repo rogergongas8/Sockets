@@ -1,0 +1,4 @@
+[2026-03-25 17:05:44] Servidor iniciado en puerto 80 (Root: ./www)
+[2026-03-25 17:05:49] Petición: GET / HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-25 17:05:49] Petición: GET /favicon.ico HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-26 16:56:37] Servidor iniciado en puerto 80 (Root: ./www)

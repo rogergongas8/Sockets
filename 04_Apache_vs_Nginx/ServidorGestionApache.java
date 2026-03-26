@@ -6,9 +6,9 @@ import java.net.*;
  */
 public class ServidorGestionApache {
     public static void main(String[] args) throws IOException {
-        ServerSocket server = new ServerSocket(8080);
+        ServerSocket server = new ServerSocket(8082);
         System.out.println("--- SIMULACIÓN APACHE (Multi-thread) ---");
-        System.out.println("Escuchando en puerto 8080...");
+        System.out.println("Escuchando en puerto 8082...");
         
         while (true) {
             Socket socket = server.accept();
