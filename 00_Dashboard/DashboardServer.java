@@ -87,24 +87,26 @@ public class DashboardServer {
     }
 
     private static void ejecutarProceso(String cmd, PrintWriter pw) {
+        String dir = null;
         String javaCmd = switch(cmd) {
-            case "chat" -> "java -Dfile.encoding=UTF-8 -cp ../01_Teoria_y_Chat ServidorChat";
-            case "chat_client" -> "java -Dfile.encoding=UTF-8 -cp ../01_Teoria_y_Chat ClienteChat";
-            case "t_blocking" -> "java -Dfile.encoding=UTF-8 -cp ../02_TicketServer_Basico ServidorTickets";
-            case "t_concurrent" -> "java -Dfile.encoding=UTF-8 -cp ../02_TicketServer_Basico ServidorTicketsConcurrencia";
-            case "t_pool" -> "java -Dfile.encoding=UTF-8 -cp ../02_TicketServer_Basico ServidorTicketsPool";
-            case "sync" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSinSincronizar";
-            case "sync_client" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ClienteTicketsDuplicados";
-            case "sync_ok" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ServidorTicketsSynchronized";
-            case "atomic" -> "java -Dfile.encoding=UTF-8 -cp ../03_Sincronizacion_y_Atomics ServidorTicketsAtomic";
-            case "apache_vs" -> "java -Dfile.encoding=UTF-8 -cp ../04_Apache_vs_Nginx ServidorGestionApache";
-            case "nginx" -> "java -Dfile.encoding=UTF-8 -cp ../04_Apache_vs_Nginx ServidorGestionNginx";
-            case "apache" -> "java -Dfile.encoding=UTF-8 -cp ../05_Servidor_Apache_Completo ApacheSimulado";
+            case "chat" -> { dir = "../01_Teoria_y_Chat"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorChat"; }
+            case "chat_client" -> { dir = "../01_Teoria_y_Chat"; yield "java -Dfile.encoding=UTF-8 -cp . ClienteChat"; }
+            case "t_blocking" -> { dir = "../02_TicketServer_Basico"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTickets"; }
+            case "t_concurrent" -> { dir = "../02_TicketServer_Basico"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsConcurrencia"; }
+            case "t_pool" -> { dir = "../02_TicketServer_Basico"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsPool"; }
+            case "sync" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsSinSincronizar"; }
+            case "sync_client" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ClienteTicketsDuplicados"; }
+            case "sync_ok" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsSynchronized"; }
+            case "atomic" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsAtomic"; }
+            case "apache_vs" -> { dir = "../04_Apache_vs_Nginx"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorGestionApache"; }
+            case "nginx" -> { dir = "../04_Apache_vs_Nginx"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorGestionNginx"; }
+            case "apache" -> { dir = "../05_Servidor_Apache_Completo"; yield "java -Dfile.encoding=UTF-8 -cp . ApacheSimulado"; }
             default -> null;
         };
 
         if (javaCmd != null) {
             final String fCmd = javaCmd;
+            final String fDir = dir;
             
             // Si ya existe este proceso, lo matamos antes de lanzar otro para evitar "Port already in use"
             Process existing = startedProcesses.get(cmd);
@@ -116,8 +118,9 @@ public class DashboardServer {
             processLogs.put(cmd, new StringBuilder("🚀 Iniciando [" + cmd + "]...\n"));
             new Thread(() -> {
                 try {
-                    System.out.println("Lanzando: " + fCmd);
+                    System.out.println("Lanzando en " + fDir + ": " + fCmd);
                     ProcessBuilder pb = new ProcessBuilder(fCmd.split(" "));
+                    if (fDir != null) pb.directory(new File(fDir));
                     pb.redirectErrorStream(true);
                     Process p = pb.start();
                     startedProcesses.put(cmd, p);

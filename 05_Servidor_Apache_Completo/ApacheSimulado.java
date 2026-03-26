@@ -76,13 +76,37 @@ public class ApacheSimulado {
             if (parts.length < 2)
                 return;
             String path = parts[1];
+            
+            // --- NUEVO: SOPORTE PARA API REST (JSON) ---
+            if (path.equalsIgnoreCase("/api/status")) {
+                long totalRequests = new File(logFile).length() / 80; // Estimación simple
+                String json = "{\n" +
+                              "  \"server\": \"ApacheMaster/v7.1\",\n" +
+                              "  \"status\": \"online\",\n" +
+                              "  \"requests_logged\": " + totalRequests + ",\n" +
+                              "  \"uptime\": \"" + (System.currentTimeMillis() % 10000) + "ms\",\n" +
+                              "  \"msg\": \"Hola desde la API de Sockets\"\n" +
+                              "}";
+                pw.println("HTTP/1.1 200 OK");
+                pw.println("Content-Type: application/json");
+                pw.println("Content-Length: " + json.length());
+                pw.println("Access-Control-Allow-Origin: *");
+                pw.println();
+                pw.print(json);
+                pw.flush();
+                log("API REST: Enviado status JSON");
+                return;
+            }
+
             if (path.equals("/"))
                 path = "/index.html";
 
             File file = new File(docRoot, path);
             if (file.exists() && !file.isDirectory()) {
+                System.out.println("[Apache] Sirviendo archivo: " + file.getAbsolutePath());
                 enviarRespuesta(out, pw, file, "200 OK");
             } else {
+                System.out.println("[Apache] ERROR 404: No se encontró " + file.getAbsolutePath());
                 enviarError(pw, "404 Not Found", "El recurso no existe.");
             }
 

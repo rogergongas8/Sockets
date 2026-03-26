@@ -3,283 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Sockets - Antigravity Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <title>Apache Master Server - Demo</title>
     <style>
-        :root {
-            --bg: #0a0a0c;
-            --surface: #15151a;
-            --accent: #d9534f;
-            --text-main: #e0e0e6;
-            --text-dim: #9494a0;
-            --terminal-bg: #0d0d0f;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            background: var(--bg); 
-            color: var(--text-main); 
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* Sidebar */
-        aside {
-            width: 280px;
-            background: var(--surface);
-            border-right: 1px solid #2a2a33;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .logo { 
-            font-size: 1.5rem; 
-            font-weight: 600; 
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        nav { display: flex; flex-direction: column; gap: 0.5rem; }
-        .nav-item {
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-            color: var(--text-dim);
-            font-size: 0.95rem;
-        }
-        .nav-item:hover { background: #2a2a33; color: white; }
-        .nav-item.active { background: #2a2a33; color: white; border-left: 3px solid var(--accent); }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            overflow-y: auto;
-        }
-
-        .header { display: flex; justify-content: space-between; align-items: start; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .header p { color: var(--text-dim); }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid #2a2a33;
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: 0.3s transform;
-        }
-        .card:hover { transform: translateY(-4px); }
-        .card h3 { color: var(--accent); margin-bottom: 0.8rem; font-size: 1.2rem; }
-        .card p { color: var(--text-dim); line-height: 1.5; font-size: 0.9rem; }
-
-        /* Console */
-        .console-container {
-            background: var(--terminal-bg);
-            border: 1px solid #333;
-            border-radius: 12px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .console-header {
-            background: #1a1a20;
-            padding: 0.6rem 1rem;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #333;
-        }
-        #console {
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #50fa7b;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            line-height: 1.4;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #50fa7b;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-            box-shadow: 0 0 10px #50fa7b;
-        }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center; max-width: 600px; border: 1px solid rgba(255,255,255,0.1); }
+        .badge { background: rgba(59, 130, 246, 0.2); color: var(--accent); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 20px; display: inline-block; }
+        h1 { font-size: 2.5rem; margin: 10px 0; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p { color: #94a3b8; line-height: 1.6; }
+        .status-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 30px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; }
+        .demo-panel { margin-top: 30px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        .demo-panel h3 { font-size: 1rem; color: var(--accent); margin-bottom: 15px; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        #api-result { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; font-family: monospace; font-size: 0.85rem; color: #10b981; min-height: 20px; word-break: break-all; }
     </style>
 </head>
 <body>
-
-    <aside>
-        <div class="logo"><span>SOCKETS</span>.LAB</div>
-        <nav>
-            <div class="nav-item active" onclick="showSection('overview')">General</div>
-            <div class="nav-item" onclick="showSection('chat')">Chat Global</div>
-            <div class="nav-item" onclick="showSection('tickets')">Sistema de Tickets</div>
-            <div class="nav-item" onclick="showSection('sync')">Sincronización</div>
-            <div class="nav-item" onclick="showSection('apache')">Apache Simulado</div>
-        </nav>
-    </aside>
-
-    <main>
-        <div class="header">
-            <div>
-                <h1 id="title">Panel Principal</h1>
-                <p id="subtitle">Gestionando sockets en tiempo real...</p>
-            </div>
-            <div>
-                <span class="status-dot"></span> Online
-            </div>
+    <div class="container">
+        <span class="badge">Servidor Apache Simulado (Java)</span>
+        <h1>¡Conexión Exitosa!</h1>
+        <p>Estás viendo un archivo <b>HTML</b> servido desde el disco por el nucleo de Java mediante sockets TCP.</p>
+        <p>Este servidor lee su puerto desde <code>config.txt</code>, gestiona peticiones <code>GET</code> persistentes y escribe cada acceso en <code>server.log</code>.</p>
+        
+        <div class="status-box">
+            <div class="dot"></div>
+            <span>SERVIDOR ACTIVO EN PUERTO 8888</span>
         </div>
 
-        <div id="content" class="dashboard-grid">
-            <div class="card">
-                <h3>Resumen de Red</h3>
-                <p>Usando protocolos TCP para garantizar la fiabilidad del envío de datos. Servidor principal activo en puerto 12345.</p>
+        <div class="demo-panel">
+            <h3>Panel de Control del Servidor (Demo)</h3>
+            <div class="btn-group">
+                <button onclick="checkStatus()">Consultar API /status</button>
+                <button onclick="simulateTraffic()" style="background: #8b5cf6;">Simular Tráfico Pesado</button>
             </div>
-            <div class="card">
-                <h3>Estado Concurrente</h3>
-                <p>Múltiples hilos detectados (Thread Mining activo). Se evita el bloqueo de red mediante ExecutorService.</p>
-            </div>
+            <div id="api-result">Pulsa un botón para interactuar con Java...</div>
         </div>
-
-        <div class="console-container">
-            <div class="console-header">
-                <span>CONSOLA DEL SERVIDOR APACHE</span>
-                <span id="log-status">ACTUALIZANDO...</span>
-            </div>
-            <div id="console">Cargando logs del servidor...</div>
-        </div>
-    </main>
+        
+        <p style="margin-top:20px; font-size:0.8rem;">Vuelve al Dashboard para ver los logs en tiempo real.</p>
+    </div>
 
     <script>
-        const sections = {
-            overview: {
-                title: "Panel Principal",
-                subtitle: "Resumen oficial de la práctica de red.",
-                cards: [
-                    { h: "Protocolo TCP", p: "Garantiza seguridad y flujo ordenado de bytes." },
-                    { h: "Seguridad", p: "Cierre ordenado implementado en todos los sockets." }
-                ],
-                showBtn: false
-            },
-            chat: {
-                title: "Centro de Chat",
-                subtitle: "Servicio de mensajería multi-usuario.",
-                cards: [
-                    { h: "Servidor Chat", p: "Puerto 12345. Protocolo de hilos dedicado." }
-                ],
-                btnLabel: "Lanzar Servidor Chat",
-                cmd: "chat"
-            },
-            tickets: {
-                title: "Tickets & Queue",
-                subtitle: "Gestión de turnos simultáneos.",
-                cards: [
-                    { h: "Solución 1", p: "Secuencial (un hilo)", cmd: "tickets_sol1" },
-                    { h: "Solución 2", p: "Hilos por conexión", cmd: "tickets_sol2" },
-                    { h: "Solución 3", p: "Pool de hilos (Recomendado)", cmd: "tickets_sol3" }
-                ],
-                isGrid: true
-            },
-            sync: {
-                title: "Sincronización",
-                subtitle: "Protección de secciones críticas.",
-                cards: [
-                    { h: "Demo Errores", p: "Muestra tickets duplicados.", cmd: "sync_demo" }
-                ],
-                btnLabel: "Lanzar Test de Carrera",
-                cmd: "sync_demo"
-            },
-            apache: {
-                title: "Apache vs Nginx",
-                subtitle: "Comparativa de gestión de recursos.",
-                cards: [
-                    { h: "Apache Mgmt", p: "Thread-per-connection.", cmd: "apache_mgmt" },
-                    { h: "Nginx Mgmt", p: "Event-Loop.", cmd: "nginx_mgmt" }
-                ],
-                isGrid: true
-            }
-        };
-
-        function showSection(key) {
-            const data = sections[key];
-            document.getElementById('title').innerText = data.title;
-            document.getElementById('subtitle').innerText = data.subtitle;
-            
-            let html = "";
-            if (data.cards) {
-                data.cards.forEach(c => {
-                    html += `
-                    <div class="card">
-                        <h3>${c.h}</h3>
-                        <p>${c.p}</p>
-                        ${c.cmd ? `<button onclick="runCommand('${c.cmd}')" style="margin-top:10px; padding:5px 10px; cursor:pointer; background:var(--accent); border:none; color:white; border-radius:4px;">Ejecutar</button>` : ''}
-                    </div>`;
-                });
-            }
-            
-            if (data.btnLabel && !data.isGrid) {
-                html += `<div style="grid-column: 1/-1"><button onclick="runCommand('${data.cmd}')" style="padding:15px; background:var(--accent); border:none; color:white; border-radius:8px; cursor:pointer; font-weight:bold; width:100%">${data.btnLabel}</button></div>`;
-            }
-
-            document.getElementById('content').innerHTML = html;
-
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            // Usar key para encontrar el item en el nav
-            const items = document.querySelectorAll('.nav-item');
-            if (key === 'overview') items[0].classList.add('active');
-            if (key === 'chat') items[1].classList.add('active');
-            if (key === 'tickets') items[2].classList.add('active');
-            if (key === 'sync') items[3].classList.add('active');
-            if (key === 'apache') items[4].classList.add('active');
-        }
-
-        async function runCommand(cmd) {
-            alert("Lanzando proceso: " + cmd + ". Mira la consola de abajo para los resultados.");
+        async function checkStatus() {
+            const out = document.getElementById('api-result');
+            out.innerText = "Consultando...";
             try {
-                await fetch('/api/run?cmd=' + cmd);
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                out.innerText = JSON.stringify(data, null, 2);
             } catch (e) {
-                console.error(e);
+                out.innerText = "Error: " + e.message;
             }
         }
 
-        // Sistema de Logs (Polling)
-        async function fetchLogs() {
-            try {
-                const response = await fetch('/api/logs');
-                const text = await response.text();
-                const consoleEl = document.getElementById('console');
-                consoleEl.innerText = text;
-                consoleEl.scrollTop = consoleEl.scrollHeight;
-                document.getElementById('log-status').innerText = "EN VIVO";
-            } catch (e) {
-                document.getElementById('log-status').innerText = "ERROR DE CONEXIÓN";
+        async function simulateTraffic() {
+            const out = document.getElementById('api-result');
+            out.innerText = "Generando 10 peticiones rápidas...";
+            for(let i=1; i<=10; i++) {
+                fetch('/?request=' + i); 
             }
+            setTimeout(() => {
+                out.innerText = "✅ 10 peticiones enviadas. ¡Mira los logs del Dashboard!";
+            }, 500);
         }
-
-        setInterval(fetchLogs, 2000);
-        fetchLogs();
     </script>
 </body>
 </html>
