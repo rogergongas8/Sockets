@@ -281,7 +281,7 @@
                 <button onclick="launch('sync', 'Sync Unsafe')" style="color:var(--error)">Servidor Inseguro</button>
                 <button onclick="launch('sync_ok', 'Sync OK')">Servidor Synchronized</button>
                 <button onclick="launch('atomic', 'Sync Atomic')">Servidor Atomico</button>
-                <button class="client-btn" onclick="runAutomatedStress(12347)">Stress Test Web (Auto)</button>
+                <button class="client-btn" onclick="runAutomatedStress()">Stress Test Web (Auto)</button>
             </div>
         </div>
 
@@ -337,6 +337,7 @@
     <script>
            const API_BASE = window.location.port === '9000' ? '' : 'http://localhost:9000';
         const activeTerminals = {};
+        let lastSyncPort = 12347; // Default to Unsafe
 
         async function clearAllTerminals() {
             if (!confirm("¿Seguro que quieres cerrar todos los servidores y terminales?")) return;
@@ -350,6 +351,11 @@
 
         async function launch(cmd, name) {
             try {
+                // Track port for stress test
+                if (cmd === 'sync') lastSyncPort = 12347;
+                if (cmd === 'sync_ok') lastSyncPort = 12348;
+                if (cmd === 'atomic') lastSyncPort = 12349;
+
                 await fetch(`${API_BASE}/api/launcher?cmd=${cmd}`);
                 spawnServerTerminal(name || cmd, cmd);
             } catch (e) { console.error("Error lanzando:", e); }
@@ -391,15 +397,50 @@
             }, 1000);
         }
 
-        async function runAutomatedStress(port) {
-            const num = prompt("Numero de peticiones:", "10");
+        async function runAutomatedStress() {
+            const port = lastSyncPort;
+            const num = prompt(`Lanzando Stress Test en puerto ${port}.\n¿Número de peticiones?`, "20");
             if (!num || isNaN(num)) return;
-            const tid = await spawnTerminal('STRESS', port);
-            if (!tid) return;
-            const sid = activeTerminals[tid];
+            
+            const resultsDiv = document.createElement('div');
+            resultsDiv.style.padding = "10px";
+            resultsDiv.style.background = "rgba(0,0,0,0.3)";
+            resultsDiv.innerHTML = `<b>STRESS TEST (${port}) - ${num} peticiones:</b><br><div id="stress-results" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;"></div>`;
+            document.getElementById('canvas').prepend(resultsDiv);
+            
+            const resultsContainer = document.getElementById('stress-results');
+
             for(let i=0; i<parseInt(num); i++) {
-                fetch(`${API_BASE}/api/socket/send?id=${sid}&msg=${encodeURIComponent('P' + (i+1))}`);
-                await new Promise(r => setTimeout(r, 50));
+                // For each request, we open a NEW connection (one-shot server design)
+                (async () => {
+                   try {
+                       const respConn = await fetch(`${API_BASE}/api/socket/connect?port=${port}`);
+                       const sid = await respConn.text();
+                       if (isNaN(sid)) return;
+                       
+                       // Send the request
+                       await fetch(`${API_BASE}/api/socket/send?id=${sid}&msg=P`);
+                       
+                       // Poll for the ticket number
+                       let ticket = "";
+                       for(let retry=0; retry<10; retry++) {
+                           const respRead = await fetch(`${API_BASE}/api/socket/read?id=${sid}`);
+                           ticket = await respRead.text();
+                           if (ticket && ticket.trim()) break;
+                           await new Promise(r => setTimeout(r, 100));
+                       }
+                       
+                       const badge = document.createElement('span');
+                       badge.innerText = `#${ticket.trim()}`;
+                       badge.style.padding = "2px 6px";
+                       badge.style.background = "var(--accent)";
+                       badge.style.borderRadius = "4px";
+                       badge.style.fontSize = "0.7rem";
+                       resultsContainer.appendChild(badge);
+                   } catch(e) {}
+                })();
+                // Concurrent requests with very small spacing
+                await new Promise(r => setTimeout(r, 10)); 
             }
         }
 

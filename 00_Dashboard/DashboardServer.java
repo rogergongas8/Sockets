@@ -88,21 +88,22 @@ public class DashboardServer {
 
     private static void ejecutarProceso(String cmd, PrintWriter pw) {
         String dir = null;
-        String javaCmd = switch(cmd) {
-            case "chat" -> { dir = "../01_Teoria_y_Chat"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorChat"; }
-            case "chat_client" -> { dir = "../01_Teoria_y_Chat"; yield "java -Dfile.encoding=UTF-8 -cp . ClienteChat"; }
-            case "t_blocking" -> { dir = "../02_TicketServer_Basico"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTickets"; }
-            case "t_concurrent" -> { dir = "../02_TicketServer_Basico"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsConcurrencia"; }
-            case "t_pool" -> { dir = "../02_TicketServer_Basico"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsPool"; }
-            case "sync" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsSinSincronizar"; }
-            case "sync_client" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ClienteTicketsDuplicados"; }
-            case "sync_ok" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsSynchronized"; }
-            case "atomic" -> { dir = "../03_Sincronizacion_y_Atomics"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsAtomic"; }
-            case "apache_vs" -> { dir = "../04_Apache_vs_Nginx"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorGestionApache"; }
-            case "nginx" -> { dir = "../04_Apache_vs_Nginx"; yield "java -Dfile.encoding=UTF-8 -cp . ServidorGestionNginx"; }
-            case "apache" -> { dir = "../05_Servidor_Apache_Completo"; yield "java -Dfile.encoding=UTF-8 -cp . ApacheSimulado"; }
-            default -> null;
-        };
+        String javaCmd = null;
+        switch(cmd) {
+            case "chat": dir = "../01_Teoria_y_Chat"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorChat"; break;
+            case "chat_client": dir = "../01_Teoria_y_Chat"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ClienteChat"; break;
+            case "t_blocking": dir = "../02_TicketServer_Basico"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorTickets"; break;
+            case "t_concurrent": dir = "../02_TicketServer_Basico"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsConcurrencia"; break;
+            case "t_pool": dir = "../02_TicketServer_Basico"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsPool"; break;
+            case "sync": dir = "../03_Sincronizacion_y_Atomics"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsSinSincronizar"; break;
+            case "sync_client": dir = "../03_Sincronizacion_y_Atomics"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ClienteTicketsDuplicados"; break;
+            case "sync_ok": dir = "../03_Sincronizacion_y_Atomics"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsSynchronized"; break;
+            case "atomic": dir = "../03_Sincronizacion_y_Atomics"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorTicketsAtomic"; break;
+            case "apache_vs": dir = "../04_Apache_vs_Nginx"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorGestionApache"; break;
+            case "nginx": dir = "../04_Apache_vs_Nginx"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ServidorGestionNginx"; break;
+            case "apache": dir = "../05_Servidor_Apache_Completo"; javaCmd = "java -Dfile.encoding=UTF-8 -cp . ApacheSimulado"; break;
+            default: javaCmd = null;
+        }
 
         if (javaCmd != null) {
             final String fCmd = javaCmd;

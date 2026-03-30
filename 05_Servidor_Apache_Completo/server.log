@@ -12,3 +12,60 @@
 [2026-03-26 19:24:31] Petición: GET /?request=10 HTTP/1.1 de /0:0:0:0:0:0:0:1
 [2026-03-26 19:24:35] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
 [2026-03-26 19:24:35] API REST: Enviado status JSON
+[2026-03-30 15:47:58] Servidor iniciado en puerto 8888 (Root: ./www)
+[2026-03-30 15:48:02] Petición: GET / HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:02] Petición: GET /favicon.ico HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:04] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:04] API REST: Enviado status JSON
+[2026-03-30 15:48:08] Petición: GET /?request=1 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=2 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=3 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=4 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=7 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=8 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=5 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=6 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=9 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:08] Petición: GET /?request=10 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:10] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:10] API REST: Enviado status JSON
+[2026-03-30 15:48:18] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:18] API REST: Enviado status JSON
+[2026-03-30 15:48:26] Servidor iniciado en puerto 8888 (Root: ./www)
+[2026-03-30 15:48:30] Petición: GET / HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:31] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:31] API REST: Enviado status JSON
+[2026-03-30 15:48:34] Petición: GET /?request=1 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=2 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=4 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=5 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=3 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=6 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=7 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=8 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=9 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:34] Petición: GET /?request=10 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:35] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 15:48:35] API REST: Enviado status JSON
+[2026-03-30 16:25:40] Servidor iniciado en puerto 8888 (Root: ./www)
+[2026-03-30 16:25:50] Petición: GET / HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:25:57] Petición: GET / HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:26:03] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:26:03] API REST: Enviado status JSON
+[2026-03-30 16:26:45] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:26:45] API REST: Enviado status JSON
+[2026-03-30 16:26:47] Petición: GET / HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:26:50] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:26:50] API REST: Enviado status JSON
+[2026-03-30 16:27:14] Petición: GET /?request=1 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=2 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=3 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=4 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=6 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=7 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=5 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=8 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=9 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:14] Petición: GET /?request=10 HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:18] Petición: GET /api/status HTTP/1.1 de /0:0:0:0:0:0:0:1
+[2026-03-30 16:27:18] API REST: Enviado status JSON
